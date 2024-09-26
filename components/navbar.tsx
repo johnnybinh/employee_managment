@@ -8,25 +8,16 @@ import {
   NavbarMenuItem,
 } from "@nextui-org/navbar";
 import { Button } from "@nextui-org/button";
-import { Kbd } from "@nextui-org/kbd";
+
 import { Link } from "@nextui-org/link";
-import { Input } from "@nextui-org/input";
-import { link as linkStyles } from "@nextui-org/theme";
-import NextLink from "next/link";
-import clsx from "clsx";
 
-import { siteConfig } from "@/config/site";
-import {} from "@/components/theme-switch";
-import {
-  TwitterIcon,
-  GithubIcon,
-  DiscordIcon,
-  HeartFilledIcon,
-  SearchIcon,
-  Logo,
-} from "@/components/icons";
+import { lucia, validateRequest } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { Form } from "@/lib/form";
 
-export const Navbar = () => {
+export const Navbar = async () => {
+  const { user } = await validateRequest();
   return (
     <div>
       <NextUINavbar maxWidth="2xl" position="sticky" isBordered>
@@ -55,7 +46,17 @@ export const Navbar = () => {
           </NavbarItem>
         </NavbarContent>
         <NavbarContent justify="end">
-          <Link href="/login">Login</Link>
+          {!user ? (
+            <div>
+              <Link href="login">Login</Link>
+            </div>
+          ) : (
+            <Form action={logout}>
+              <Button type="submit" variant="shadow">
+                Sign out
+              </Button>
+            </Form>
+          )}
         </NavbarContent>
       </NextUINavbar>
     </div>
@@ -65,3 +66,24 @@ export const Navbar = () => {
 const EmployeeNavBar = () => {};
 
 const AdminNavBar = () => {};
+
+async function logout() {
+  "use server";
+  console.log("logging out");
+  const { session } = await validateRequest();
+  if (!session) {
+    return {
+      error: "Unauthorized",
+    };
+  }
+
+  await lucia.invalidateSession(session.id);
+
+  const sessionCookie = lucia.createBlankSessionCookie();
+  cookies().set(
+    sessionCookie.name,
+    sessionCookie.value,
+    sessionCookie.attributes
+  );
+  return redirect("/login");
+}

@@ -4,9 +4,11 @@ import { lucia, validateRequest } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "../db";
 import { userTable } from "../db/schemas";
+import { eq } from "drizzle-orm";
 
-export async function login(_: any, formData: FormData): Promise<ActionResult> {
+export async function loginAction(_: any, formData: FormData) {
   "use server";
+  console.log("login started");
   const username = formData.get("username");
   if (
     typeof username !== "string" ||
@@ -29,7 +31,10 @@ export async function login(_: any, formData: FormData): Promise<ActionResult> {
     };
   }
 
-  const existingUser = db.query.user;
+  const existingUser = await db.query.userTable.findFirst({
+    where: eq(userTable.username, username.toLowerCase()),
+  });
+  console.log(existingUser);
   if (!existingUser) {
     return {
       error: "Incorrect username or password",
@@ -65,4 +70,24 @@ export async function login(_: any, formData: FormData): Promise<ActionResult> {
     sessionCookie.attributes
   );
   return redirect("/");
+}
+
+async function logout() {
+  "use server";
+  const { session } = await validateRequest();
+  if (!session) {
+    return {
+      error: "Unauthorized",
+    };
+  }
+
+  await lucia.invalidateSession(session.id);
+
+  const sessionCookie = lucia.createBlankSessionCookie();
+  cookies().set(
+    sessionCookie.name,
+    sessionCookie.value,
+    sessionCookie.attributes
+  );
+  return redirect("/login");
 }

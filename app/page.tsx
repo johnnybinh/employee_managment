@@ -1,14 +1,12 @@
-import { lucia } from "@/lib/auth";
+import { lucia, validateRequest } from "@/lib/auth";
 import React from "react";
 
 const page = async () => {
-  const { user } = await lucia.validateSession();
-  if (user) {
-    alert(user);
-  }
+  const { user } = await validateRequest();
+
   return (
     <div className="flex justify-center items-center">
-      <div>hello</div>
+      {!user ? <div>not logged</div> : <div>hello{JSON.stringify(user)}</div>}
     </div>
   );
 };
