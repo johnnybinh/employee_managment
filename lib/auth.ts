@@ -17,6 +17,11 @@ export const lucia = new Lucia(adapter, {
       secure: process.env.NODE_ENV === "production",
     },
   },
+  getUserAttributes(DatabaseUserAttributes) {
+    return {
+      username: DatabaseUserAttributes.username,
+    };
+  },
 });
 
 export const validateRequest = cache(

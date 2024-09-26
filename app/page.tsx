@@ -6,7 +6,7 @@ const page = async () => {
 
   return (
     <div className="flex justify-center items-center">
-      {!user ? <div>not logged</div> : <div>hello{JSON.stringify(user)}</div>}
+      {!user ? <div>not logged</div> : <div>hello {user.username}</div>}
     </div>
   );
 };

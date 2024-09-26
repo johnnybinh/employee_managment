@@ -23,8 +23,13 @@ const LoginPage = async () => {
               Enter your credentials to login
             </p>
             <br />
-            <Input name="username" id="username" />
-            <Input type="password" name="password" id="password" />
+            <Input label="username" name="username" id="username" />
+            <Input
+              label="password"
+              type="password"
+              name="password"
+              id="password"
+            />
             <Button type="submit" color="primary">
               Log in
             </Button>
